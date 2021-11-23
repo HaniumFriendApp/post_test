@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Image, Alert, Dimensions } from 'react-native';
 import { Col, Row, Grid } from 'react-native-easy-grid';
+import axios from 'axios';
 import {
   Container,
   Content,
@@ -60,7 +61,11 @@ export default function SignUpPage({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const tempImage =
     'https://firebasestorage.googleapis.com/v0/b/sparta-study-plus.appspot.com/o/lecture%2F6-min.png?alt=media&token=bbc87679-4084-40ad-b6cd-01e808983fa4';
-
+  const instance = axios.create({
+    baseURL: 'http://localhost:8080',
+    headers: { 'X-Custom-Header': 'foobar' },
+    timeout: 1000,
+  });
   const getPermission = async () => {
     if (Platform.OS !== 'web') {
       const { status } =
@@ -160,10 +165,7 @@ export default function SignUpPage({ navigation }) {
       setPasswordConfirmError('');
     }
     console.log(navigation);
-    registration(nickName, email + '@' + emailEnd, password, navigation); //간단하게 테스트 하기위해 이렇게 사용. 실제로는 아래 주석함수를 사용해야함.
-
-    let date = new Date();
-    let getTime = date.getTime();
+    //registration(nickName, email + '@' + emailEnd, password, navigation); //간단하게 테스트 하기위해 이렇게 사용. 실제로는 아래 주석함수를 사용해야함.
     let data = {
       image: image,
       id: id,
@@ -174,8 +176,22 @@ export default function SignUpPage({ navigation }) {
       date: getTime,
       email: email + '@' + emailEnd,
     };
+    axios
+      .post('/api/members', JSON.stringify(data), {
+        headers: {
+          'Content-Type': `application/json`,
+        },
+      })
+      .then((res) => {
+        console.log(res);
+      });
+
+    let date = new Date();
+    let getTime = date.getTime();
+
     const response = await fetch(imageUri);
     const blob = response.blob();
+
     // const imageUrl = await imageUpload(blob, getTime);// 이미지 업로드 하는 firebase백엔드함수 (springboot용으로 수정해야됨.->백엔드)
     data.image = imageUrl;
     // registration(data); //실제로는 이렇게 들어가는백엔드 함수가 있어야 한다.!!!!! 수정!!->백엔드
